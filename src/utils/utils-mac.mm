@@ -5,6 +5,7 @@
 #import <Security/Security.h>
 
 #include <QString>
+#include <vector>
 
 #if !__has_feature(objc_arc)
 #error this file must be built with ARC support
@@ -165,8 +166,65 @@ static DarkModeChangedCallback *darkModeWatcher = NULL;
 // ****************************************************************************
 // others
 // ****************************************************************************
+#define CF_CAST_DEFN(TypeCF) \
+template<> TypeCF##Ref \
+CFCast<TypeCF##Ref>(const CFTypeRef& cf_val) { \
+  if (cf_val == NULL) { \
+    return NULL; \
+  } \
+  if (CFGetTypeID(cf_val) == TypeCF##GetTypeID()) { \
+    return (TypeCF##Ref)(cf_val); \
+  } \
+  return NULL; \
+} \
+
+CF_CAST_DEFN(CFArray);
+CF_CAST_DEFN(CFBag);
+CF_CAST_DEFN(CFBoolean);
+CF_CAST_DEFN(CFData);
+CF_CAST_DEFN(CFDate);
+CF_CAST_DEFN(CFDictionary);
+CF_CAST_DEFN(CFNull);
+CF_CAST_DEFN(CFNumber);
+CF_CAST_DEFN(CFSet);
+CF_CAST_DEFN(CFString);
+CF_CAST_DEFN(CFURL);
+CF_CAST_DEFN(CFUUID);
+#undef CF_CAST_DEFN
+
 namespace utils {
 namespace mac {
+
+QString getValueFromCFString(CFStringRef cfstring) {
+  CFIndex length = CFStringGetLength(cfstring);
+  if (length == 0)
+    return QString();
+
+  CFRange whole_string = CFRangeMake(0, length);
+  CFIndex out_size;
+  CFIndex converted = CFStringGetBytes(cfstring,
+                                       whole_string,
+                                       kCFStringEncodingUTF8,
+                                       0,      // lossByte
+                                       false,  // isExternalRepresentation
+                                       NULL,   // buffer
+                                       0,      // maxBufLen
+                                       &out_size);
+  if (converted == 0 || out_size == 0)
+    return QString();
+  std::vector<char> out_buffer(out_size);
+  converted = CFStringGetBytes(cfstring,
+                               whole_string,
+                               kCFStringEncodingUTF8,
+                               0,      // lossByte
+                               false,  // isExternalRepresentation
+                               reinterpret_cast<UInt8*>(&out_buffer.front()),   // buffer
+                               out_size,      // maxBufLen
+                               NULL);
+  if (converted == 0)
+    return QString();
+  return QString::fromUtf8(&out_buffer.front(), out_size);
+}
 
 // another solution: hide dock icon when mainwindows is closed and show when
 // mainwindows is shown

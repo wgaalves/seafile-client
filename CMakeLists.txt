@@ -75,7 +75,7 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 endif()
 
 IF (WIN32)
-    SET(EXTRA_LIBS ${EXTRA_LIBS} psapi ws2_32 shlwapi)
+    SET(EXTRA_LIBS ${EXTRA_LIBS} psapi ws2_32 shlwapi winhttp)
     SET(EXTRA_SOURCES ${EXTRA_SOURCES} seafile-applet.rc)
     IF (${CMAKE_BUILD_TYPE} MATCHES Release)
       SET(GUI_TYPE WIN32)
@@ -97,7 +97,9 @@ ELSEIF (APPLE)
     MARK_AS_ADVANCED (COCOA_LIBRARY)
     FIND_LIBRARY(Sec_LIBRARY Security)
     MARK_AS_ADVANCED (Sec_LIBRARY)
-    SET(EXTRA_LIBS ${EXTRA_LIBS} ${COCOA_LIBRARY} ${Sec_LIBRARY})
+    FIND_LIBRARY(SYSTEMCONFIGURE_LIBRARY SystemConfiguration)
+    MARK_AS_ADVANCED (SYSTEMCONFIGURE_LIBRARY)
+    SET(EXTRA_LIBS ${EXTRA_LIBS} ${SYSTEMCONFIGURE_LIBRARY} ${Sec_LIBRARY} ${COCOA_LIBRARY})
 ENDIF()
 
 ## these files using c++11 features, don't enable it for qt4
@@ -493,6 +495,7 @@ ENDFUNCTION(ADD_SC_LIBRARY)
 # library utils
 LIST(APPEND utils_sources
     src/utils/utils.cpp
+    src/utils/proxy-utils.cpp
     src/utils/rsa.cpp
     src/utils/api-utils.cpp
     src/utils/paint-utils.cpp
@@ -783,4 +786,5 @@ IF (BUILD_TESTING)
     ADD_QTEST(test_server-info)
     ADD_QTEST(test_utils)
     ADD_QTEST(test_file-utils)
+    ADD_QTEST(test_proxy-utils)
 ENDIF()

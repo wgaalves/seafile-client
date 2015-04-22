@@ -5,8 +5,16 @@
 #include <QString>
 #include <vector>
 #include <QByteArray>
+#if defined(__OBJC__)
+#import <Foundation/Foundation.h>
+#else  // __OBJC__
+#include <CoreFoundation/CoreFoundation.h>
+#endif // __OBJC__
 
 typedef void DarkModeChangedCallback(bool value);
+
+template<typename T>
+T CFCast(const CFTypeRef& cf_val);
 
 namespace utils {
 namespace mac {
@@ -22,6 +30,16 @@ bool isOSXYosemiteOrGreater();
 bool isOSXMavericksOrGreater();
 bool isOSXMountainLionOrGreater();
 bool isOSXLionOrGreater();
+
+template<typename T>
+T getValueFromDictionary(CFDictionaryRef dict, CFStringRef key) {
+  CFTypeRef value = CFDictionaryGetValue(dict, key);
+  T value_specific = CFCast<T>(value);
+
+  return value_specific;
+}
+
+QString getValueFromCFString(CFStringRef cfstring);
 
 void setDockIconStyle(bool hidden);
 void orderFrontRegardless(unsigned long long win_id, bool force = false);
