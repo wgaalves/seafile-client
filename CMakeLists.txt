@@ -174,6 +174,7 @@ SET(moc_headers
   src/message-listener.h
   src/network-mgr.h
   src/settings-mgr.h
+  src/power-monitor.h
   src/traynotificationwidget.h
   src/traynotificationmanager.h
   src/seahub-notifications-monitor.h
@@ -345,6 +346,7 @@ SET(seafile_client_sources
   src/shared-application.cpp
   src/avatar-service.cpp
   src/settings-mgr.cpp
+  src/power-monitor.cpp
   src/traynotificationwidget.cpp
   src/traynotificationmanager.cpp
   src/certs-mgr.cpp
